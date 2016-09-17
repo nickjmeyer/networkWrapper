@@ -8,8 +8,6 @@ boost::mutex global_stream_lock;
 class MyConnection : public Connection
 {
 private:
-
-private:
 	void OnAccept( const std::string & host, uint16_t port )
 	{
 		global_stream_lock.lock();
