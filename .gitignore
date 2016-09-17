@@ -1,3 +1,7 @@
+# build directories
+build/
+!CMakeLists.txt
+
 # Compiled Object files
 *.slo
 *.lo
@@ -30,3 +34,12 @@
 
 # jet brains
 .idea/
+
+# CMake
+CMakeCache.txt
+CMakeFiles
+CMakeScripts
+Makefile
+cmake_install.cmake
+install_manifest.txt
+CTestTestfile.cmake
