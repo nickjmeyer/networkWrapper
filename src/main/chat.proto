@@ -1,0 +1,4 @@
+package chat;
+
+message Letter {
+}
