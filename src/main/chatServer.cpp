@@ -1,5 +1,4 @@
-#include "networkWrapper.hpp"
-#include "chat.pb.h"
+#include "chatServer.hpp"
 #include <unistd.h>
 #include <iostream>
 #include <boost/date_time/posix_time/posix_time.hpp>
@@ -9,169 +8,131 @@
 
 boost::mutex global_stream_lock;
 
-class ChatHive : public Hive
+void ChatConnection::OnAccept( const std::string & host, uint16_t port )
 {
-public:
-	virtual void Process(void * data)
-		{
-			const chat::Letter * letter = static_cast<chat::Letter*>(data);
+	global_stream_lock.lock();
+	std::cout << "[" << __FUNCTION__ << "] "
+						<< host << ":" << port << std::endl;
+	global_stream_lock.unlock();
 
-			global_stream_lock.lock();
-			std::cout << "[" << __FUNCTION__ << "]"
-								<< letter->body() << std::endl;
-			global_stream_lock.unlock();
-		}
+	// Start the next receive
+	Recv();
+}
 
-};
 
-class ChatConnection : public Connection
+void ChatConnection::OnConnect( const std::string & host, uint16_t port )
 {
-private:
-	void OnAccept( const std::string & host, uint16_t port )
-	{
-		global_stream_lock.lock();
-		std::cout << "[" << __FUNCTION__ << "] "
-							<< host << ":" << port << std::endl;
-		global_stream_lock.unlock();
+	global_stream_lock.lock();
+	std::cout << "[" << __FUNCTION__ << "] "
+						<< host << ":" << port << std::endl;
+	global_stream_lock.unlock();
 
-		// Start the next receive
-		Recv();
-	}
+	// Start the next receive
+	Recv();
+}
 
-	void OnConnect( const std::string & host, uint16_t port )
-	{
-		global_stream_lock.lock();
-		std::cout << "[" << __FUNCTION__ << "] "
-							<< host << ":" << port << std::endl;
-		global_stream_lock.unlock();
-
-		// Start the next receive
-		Recv();
-	}
-
-	void OnSend( const std::vector< uint8_t > & buffer )
-	{
-		global_stream_lock.lock();
-		std::cout << "[" << __FUNCTION__ << "] "
-							<< buffer.size() << " bytes" << std::endl;
-		for( size_t x = 0; x < buffer.size(); ++x )
-		{
-			std::cout << std::hex << std::setfill( '0' ) <<
-				std::setw( 2 ) << (int)buffer[ x ] << " ";
-			if( ( x + 1 ) % 16 == 0 )
-			{
-				std::cout << std::endl;
-			}
-		}
-		std::cout << std::endl;
-		global_stream_lock.unlock();
-	}
-
-	void OnRecv( std::vector< uint8_t > & buffer )
-	{
-		global_stream_lock.lock();
-		std::cout << "[" << __FUNCTION__ << "] "
-							<< buffer.size() << " bytes" << std::endl;
-		for( size_t x = 0; x < buffer.size(); ++x )
-		{
-			std::cout << std::hex << std::setfill( '0' ) <<
-				std::setw( 2 ) << (int)buffer[ x ] << " ";
-			if( ( x + 1 ) % 16 == 0 )
-			{
-				std::cout << std::endl;
-			}
-		}
-		std::cout << std::endl;
-		global_stream_lock.unlock();
-
-
-		chat::Letter letter;
-		std::string letterStr(buffer.begin(),buffer.end());
-		letter.ParseFromString(letterStr);
-		global_stream_lock.lock();
-		std::cout << letter.body() << std::endl;
-		global_stream_lock.unlock();
-		GetHive()->GetService().post(
-			boost::bind(&Hive::Process,
-				GetHive(),&letter));
-
-		// Start the next receive
-		Recv();
-
-		// Echo the data back
-		Send( buffer );
-	}
-
-	void OnTimer( const boost::posix_time::time_duration & delta )
-	{
-		global_stream_lock.lock();
-		std::cout << "[" << __FUNCTION__ << "] " << delta << std::endl;
-		global_stream_lock.unlock();
-	}
-
-	void OnError( const boost::system::error_code & error )
-	{
-		global_stream_lock.lock();
-		std::cout << "[" << __FUNCTION__ << "] " << error
-							<< ": " << error.message() << std::endl;
-		global_stream_lock.unlock();
-	}
-
-public:
-	ChatConnection( boost::shared_ptr< ChatHive > hive )
-		: Connection( hive )
-	{
-	}
-
-	~ChatConnection()
-	{
-	}
-};
-
-class ChatAcceptor : public Acceptor
+void ChatConnection::OnSend( const std::vector< uint8_t > & buffer )
 {
-private:
-
-private:
-	bool OnAccept( boost::shared_ptr< Connection > connection,
-		const std::string & host, uint16_t port )
+	global_stream_lock.lock();
+	std::cout << "[" << __FUNCTION__ << "] "
+						<< buffer.size() << " bytes" << std::endl;
+	for( size_t x = 0; x < buffer.size(); ++x )
 	{
-		global_stream_lock.lock();
-		std::cout << "[" << __FUNCTION__ << "] "
-							<< host << ":" << port << std::endl;
-		global_stream_lock.unlock();
-
-		return true;
+		std::cout << std::hex << std::setfill( '0' ) <<
+			std::setw( 2 ) << (int)buffer[ x ] << " ";
+		if( ( x + 1 ) % 16 == 0 )
+		{
+			std::cout << std::endl;
+		}
 	}
+	std::cout << std::endl;
+	global_stream_lock.unlock();
+}
 
-	void OnTimer( const boost::posix_time::time_duration & delta )
+void ChatConnection::OnRecv( std::vector< uint8_t > & buffer )
+{
+	global_stream_lock.lock();
+	std::cout << "[" << __FUNCTION__ << "] "
+						<< buffer.size() << " bytes" << std::endl;
+	for( size_t x = 0; x < buffer.size(); ++x )
 	{
-		global_stream_lock.lock();
-		std::cout << "[" << __FUNCTION__ << "] " << delta << std::endl;
-		global_stream_lock.unlock();
+		std::cout << std::hex << std::setfill( '0' ) <<
+			std::setw( 2 ) << (int)buffer[ x ] << " ";
+		if( ( x + 1 ) % 16 == 0 )
+		{
+			std::cout << std::endl;
+		}
 	}
+	std::cout << std::endl;
 
-	void OnError( const boost::system::error_code & error )
-	{
-		global_stream_lock.lock();
-		std::cout << "[" << __FUNCTION__ << "] " << error << std::endl;
-		global_stream_lock.unlock();
-	}
+	global_stream_lock.unlock();
+	// Start the next receive
+	Recv();
 
-public:
-	ChatAcceptor( boost::shared_ptr< ChatHive > hive )
-		: Acceptor( hive )
-	{
-	}
+	// Echo the data back
+	Send( buffer );
+}
 
-	~ChatAcceptor()
-	{
-	}
-};
+void ChatConnection::OnTimer( const boost::posix_time::time_duration & delta )
+{
+	global_stream_lock.lock();
+	std::cout << "[" << __FUNCTION__ << "] " << delta << std::endl;
+	global_stream_lock.unlock();
+}
+
+void ChatConnection::OnError( const boost::system::error_code & error )
+{
+	global_stream_lock.lock();
+	std::cout << "[" << __FUNCTION__ << "] " << error
+						<< ": " << error.message() << std::endl;
+	global_stream_lock.unlock();
+}
+
+ChatConnection::ChatConnection( boost::shared_ptr< Hive > hive )
+	: Connection( hive )
+{
+}
+
+ChatConnection::~ChatConnection()
+{
+}
+
+bool ChatAcceptor::OnAccept( boost::shared_ptr< Connection > connection,
+	const std::string & host, uint16_t port )
+{
+	global_stream_lock.lock();
+	std::cout << "[" << __FUNCTION__ << "] "
+						<< host << ":" << port << std::endl;
+	global_stream_lock.unlock();
+
+	return true;
+}
+
+void ChatAcceptor::OnTimer( const boost::posix_time::time_duration & delta )
+{
+	global_stream_lock.lock();
+	std::cout << "[" << __FUNCTION__ << "] " << delta << std::endl;
+	global_stream_lock.unlock();
+}
+
+void ChatAcceptor::OnError( const boost::system::error_code & error )
+{
+	global_stream_lock.lock();
+	std::cout << "[" << __FUNCTION__ << "] " << error << std::endl;
+	global_stream_lock.unlock();
+}
+ChatAcceptor::ChatAcceptor( boost::shared_ptr< Hive > hive )
+	: Acceptor( hive )
+{
+}
+
+ChatAcceptor::~ChatAcceptor()
+{
+}
 
 int main( int argc, char * argv[] )
 {
-	boost::shared_ptr< ChatHive > hive( new ChatHive() );
+	boost::shared_ptr< Hive > hive( new Hive() );
 
 	boost::shared_ptr< ChatAcceptor > acceptor( new ChatAcceptor( hive ) );
 	acceptor->Listen( "127.0.0.1", 7777 );
