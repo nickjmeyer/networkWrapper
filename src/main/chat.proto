@@ -1,4 +1,5 @@
 package chat;
 
 message Letter {
+  optional string body = 1;
 }

@@ -1,15 +1,28 @@
 #include "networkWrapper.hpp"
+#include "chat.pb.h"
 #include <unistd.h>
 #include <iostream>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/thread/thread.hpp>
 #include <boost/thread/mutex.hpp>
+#include <queue>
 
 boost::mutex global_stream_lock;
 
 class ChatHive : public Hive
 {
-}
+public:
+	virtual void Process(void * data)
+		{
+			const chat::Letter * letter = static_cast<chat::Letter*>(data);
+
+			global_stream_lock.lock();
+			std::cout << "[" << __FUNCTION__ << "]"
+								<< letter->body() << std::endl;
+			global_stream_lock.unlock();
+		}
+
+};
 
 class ChatConnection : public Connection
 {
@@ -70,6 +83,17 @@ private:
 		}
 		std::cout << std::endl;
 		global_stream_lock.unlock();
+
+
+		chat::Letter letter;
+		std::string letterStr(buffer.begin(),buffer.end());
+		letter.ParseFromString(letterStr);
+		global_stream_lock.lock();
+		std::cout << letter.body() << std::endl;
+		global_stream_lock.unlock();
+		GetHive()->GetService().post(
+			boost::bind(&Hive::Process,
+				GetHive(),&letter));
 
 		// Start the next receive
 		Recv();

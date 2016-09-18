@@ -260,6 +260,9 @@ public:
 	// Restarts the networking system after Stop as been called. A new work
 	// object is created ad the shutdown flag is cleared.
 	void Reset();
+
+	// Process received data
+	virtual void Process(void * data) = 0;
 };
 
 //-----------------------------------------------------------------------------

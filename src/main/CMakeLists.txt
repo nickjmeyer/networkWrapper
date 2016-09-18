@@ -4,6 +4,10 @@ target_link_libraries(networkWrapper ${Boost_FILESYSTEM_LIBRARY}
 
 protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS chat.proto)
 
+include_directories(${Protobuf_INCLUDE_DIRS})
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
+
+
 # echo binaries
 add_executable(echoServer echoServer.cpp)
 target_link_libraries(echoServer networkWrapper ${Boost_THREAD_LIBRARY})

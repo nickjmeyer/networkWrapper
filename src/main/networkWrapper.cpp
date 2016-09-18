@@ -99,7 +99,6 @@ void Acceptor::DispatchAccept( boost::shared_ptr< Connection > connection )
 
 void Acceptor::HandleTimer( const boost::system::error_code & error )
 {
-	std::cout << __FUNCTION__ << std::endl;
 	if( error || HasError() || m_hive->HasStopped() )
 	{
 		StartError( error );
@@ -114,7 +113,6 @@ void Acceptor::HandleTimer( const boost::system::error_code & error )
 void Acceptor::HandleAccept( const boost::system::error_code & error,
 	boost::shared_ptr< Connection > connection )
 {
-	std::cout << __FUNCTION__ << std::endl;
 	if( error || HasError() || m_hive->HasStopped() )
 	{
 		connection->StartError( error );
@@ -270,12 +268,8 @@ void Connection::StartError( const boost::system::error_code & error )
 
 void Connection::HandleConnect( const boost::system::error_code & error )
 {
-	std::cout << __FUNCTION__ << std::endl;
 	if( error || HasError() || m_hive->HasStopped() )
 	{
-		std::cout << "error: " << error << std::endl
-							<< "haserror: " << HasError() << std::endl
-							<< "hasstopped: " << m_hive->HasStopped() << std::endl;
 		StartError( error );
 	}
 	else
@@ -295,7 +289,6 @@ void Connection::HandleConnect( const boost::system::error_code & error )
 void Connection::HandleSend( const boost::system::error_code &  error,
 	std::list< std::vector< uint8_t > >::iterator itr )
 {
-	std::cout << __FUNCTION__ << std::endl;
 	if( error || HasError() || m_hive->HasStopped() )
 	{
 		StartError( error );
@@ -311,7 +304,6 @@ void Connection::HandleSend( const boost::system::error_code &  error,
 void Connection::HandleRecv( const boost::system::error_code & error,
 	int32_t actual_bytes )
 {
-	std::cout << __FUNCTION__ << std::endl;
 	if( error || HasError() || m_hive->HasStopped() )
 	{
 		StartError( error );
@@ -330,7 +322,6 @@ void Connection::HandleRecv( const boost::system::error_code & error,
 
 void Connection::HandleTimer( const boost::system::error_code & error )
 {
-	std::cout << __FUNCTION__ << std::endl;
 	if( error || HasError() || m_hive->HasStopped() )
 	{
 		StartError( error );

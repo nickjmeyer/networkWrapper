@@ -5,7 +5,15 @@
 
 boost::mutex global_stream_lock;
 
-class MyConnection : public Connection
+class EchoHive : public Hive
+{
+public:
+	virtual void Process(void * data)
+		{
+		}
+};
+
+class EchoConnection : public Connection
 {
 private:
 	void OnAccept( const std::string & host, uint16_t port )
@@ -91,12 +99,12 @@ private:
 	}
 
 public:
-	MyConnection( boost::shared_ptr< Hive > hive )
+	EchoConnection( boost::shared_ptr< Hive > hive )
 		: Connection( hive )
 	{
 	}
 
-	~MyConnection()
+	~EchoConnection()
 	{
 	}
 };
@@ -106,12 +114,12 @@ int main( int argc, char * argv[] )
 	global_stream_lock.lock();
 	std::cout << "hive" << std::endl;
 	global_stream_lock.unlock();
-	boost::shared_ptr< Hive > hive( new Hive() );
+	boost::shared_ptr< Hive > hive( new EchoHive() );
 
 	global_stream_lock.lock();
 	std::cout << "connection" << std::endl;
 	global_stream_lock.unlock();
-	boost::shared_ptr< MyConnection > connection( new MyConnection( hive ) );
+	boost::shared_ptr< EchoConnection > connection( new EchoConnection( hive ) );
 	global_stream_lock.lock();
 	std::cout << "connect" << std::endl;
 	global_stream_lock.unlock();
