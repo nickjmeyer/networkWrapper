@@ -142,7 +142,7 @@ void ChatConnection::OnSend( const std::vector< uint8_t > & buffer )
 	// 		std::cout << std::endl;
 	// 	}
 	// }
-	std::cout << std::endl;
+	// std::cout << std::endl;
 	global_stream_lock.unlock();
 }
 
