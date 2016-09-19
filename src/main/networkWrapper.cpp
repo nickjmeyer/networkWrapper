@@ -130,9 +130,7 @@ void Acceptor::HandleAccept( const boost::system::error_code & error,
 					m_acceptor.local_endpoint().address().to_string(),
 					m_acceptor.local_endpoint().port() );
 
-				std::cout << "here" << std::endl;
 				Accept(connection->NewConnection());
-				std::cout << "done" << std::endl;
 			}
 		}
 		else
