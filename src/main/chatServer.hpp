@@ -11,16 +11,25 @@ class ChatAcceptor;
 
 class ChatServer {
 public:
+	void process(const chat::Letter & letter,
+		const boost::shared_ptr<ChatConnection> connection);
+
+	void addConnection(const std::string & hostPort,
+		const boost::shared_ptr<ChatConnection> connection);
+
+	void delConnection(const boost::shared_ptr<ChatConnection> connection);
 
 private:
-	std::queue<chat::Letter> outgoing;
-	std::queue<chat::Letter> incoming;
+	// host and port to connection
+	std::map<const std::string,const boost::shared_ptr<ChatConnection> > hpToConn;
 };
 
 
 class ChatConnection : public Connection
 {
 private:
+	boost::shared_ptr<ChatServer> chatSrv;
+
 	void OnAccept( const std::string & host, uint16_t port );
 
 	void OnConnect( const std::string & host, uint16_t port );
@@ -34,17 +43,22 @@ private:
 	void OnError( const boost::system::error_code & error );
 
 public:
-	ChatConnection( boost::shared_ptr< Hive > hive );
+	ChatConnection( boost::shared_ptr<ChatServer> chatSrv,
+		boost::shared_ptr< Hive > hive );
 
 
 	~ChatConnection();
 
 	boost::shared_ptr<Connection> NewConnection();
+
+	void SendLetter(const chat::Letter & letter);
 };
 
 class ChatAcceptor : public Acceptor
 {
 private:
+	boost::shared_ptr<ChatServer> chatSrv;
+
 	bool OnAccept( boost::shared_ptr< Connection > connection,
 		const std::string & host, uint16_t port );
 
@@ -53,7 +67,8 @@ private:
 	void OnError( const boost::system::error_code & error );
 
 public:
-	ChatAcceptor( boost::shared_ptr< Hive > hive );
+	ChatAcceptor( boost::shared_ptr<ChatServer> chatSrv,
+		boost::shared_ptr< Hive > hive );
 
 	~ChatAcceptor();
 };

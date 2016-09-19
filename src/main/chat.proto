@@ -1,5 +1,27 @@
 package chat;
 
+message ScoutLetter {
+  repeated string client = 1;
+}
+
+message TalkingLetter {
+  optional string recipient = 1;
+  optional string body = 2;
+}
+
+message NameLetter {
+  optional string name = 1;
+}
+
 message Letter {
-  optional string body = 1;
+  enum Type {
+    SCOUT = 0;
+    TALKING = 1;
+    NAME = 2;
+  }
+
+  optional Type type = 1;
+  optional ScoutLetter scoutletter = 2;
+  optional TalkingLetter talkingletter = 3;
+  optional NameLetter nameletter = 4;
 }
