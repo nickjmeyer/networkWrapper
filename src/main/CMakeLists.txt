@@ -9,11 +9,11 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 
 # echo binaries
-add_executable(echoServer echoServer.cpp)
-target_link_libraries(echoServer networkWrapper ${Boost_THREAD_LIBRARY})
+# add_executable(echoServer echoServer.cpp)
+# target_link_libraries(echoServer networkWrapper ${Boost_THREAD_LIBRARY})
 
-add_executable(echoClient echoClient.cpp)
-target_link_libraries(echoClient networkWrapper ${Boost_THREAD_LIBRARY})
+# add_executable(echoClient echoClient.cpp)
+# target_link_libraries(echoClient networkWrapper ${Boost_THREAD_LIBRARY})
 
 # chat binaries
 add_executable(chatServer chatServer.cpp ${PROTO_SRCS} ${PROTO_HDRS})
