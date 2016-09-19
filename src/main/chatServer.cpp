@@ -218,7 +218,7 @@ int main( int argc, char * argv[] )
 
 	boost::shared_ptr< ChatAcceptor > acceptor(
 		new ChatAcceptor( chatSrv, hive ) );
-	acceptor->Listen( "127.0.0.1", 7777 );
+	acceptor->Listen( "110lnx01.stat.ncsu.edu", 7777 );
 
 	boost::shared_ptr< ChatConnection > connection(
 		new ChatConnection(chatSrv,hive));

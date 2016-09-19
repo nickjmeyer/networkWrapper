@@ -133,7 +133,7 @@ int main( int argc, char * argv[] )
 	global_stream_lock.lock();
 	std::cout << "connect" << std::endl;
 	global_stream_lock.unlock();
-	connection->Connect( "127.0.0.1", 7777 );
+	connection->Connect( "110lnx01.stat.ncsu.edu", 7777 );
 
 	chat::Letter letter;
 	chat::TalkingLetter * talking = letter.mutable_talkingletter();
