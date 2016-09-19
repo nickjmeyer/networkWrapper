@@ -121,6 +121,17 @@ boost::shared_ptr<Connection> ChatConnection::NewConnection () {
 
 int main( int argc, char * argv[] )
 {
+	std::string srv;
+	if(argc > 2)
+		std::cout << "too many arguments" << std::endl;
+	else if(argc == 2)
+		srv = argv[1];
+	else
+		srv = "localhost";
+
+	std::cout << "connecting too: " << srv << std::endl;
+
+
 	global_stream_lock.lock();
 	std::cout << "hive" << std::endl;
 	global_stream_lock.unlock();
@@ -137,7 +148,7 @@ int main( int argc, char * argv[] )
 
 	chat::Letter letter;
 	chat::TalkingLetter * talking = letter.mutable_talkingletter();
-	talking->set_body("hello from client " + std::string(argv[1]));
+	talking->set_body("hello from client");
 	letter.set_type(chat::Letter_Type_SCOUT);
 
 	uint8_t tick = 0;
