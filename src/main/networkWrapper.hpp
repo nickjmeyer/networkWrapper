@@ -93,6 +93,9 @@ private:
 	virtual void OnError( const boost::system::error_code & error ) = 0;
 
 public:
+	// copy the object
+	virtual boost::shared_ptr<Connection> NewConnection() = 0;
+
 	// Returns the Hive object.
 	boost::shared_ptr< Hive > GetHive();
 

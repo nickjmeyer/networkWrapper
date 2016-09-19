@@ -129,6 +129,8 @@ void Acceptor::HandleAccept( const boost::system::error_code & error,
 				connection->OnAccept(
 					m_acceptor.local_endpoint().address().to_string(),
 					m_acceptor.local_endpoint().port() );
+
+				Accept(connection->NewConnection());
 			}
 		}
 		else

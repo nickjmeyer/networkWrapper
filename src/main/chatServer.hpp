@@ -5,11 +5,11 @@
 #include "chat.pb.h"
 #include <queue>
 
-class ChatClient;
+class ChatServer;
 class ChatConnection;
 class ChatAcceptor;
 
-class ChatClient {
+class ChatServer {
 public:
 
 private:
@@ -36,7 +36,10 @@ private:
 public:
 	ChatConnection( boost::shared_ptr< Hive > hive );
 
+
 	~ChatConnection();
+
+	boost::shared_ptr<Connection> NewConnection();
 };
 
 class ChatAcceptor : public Acceptor
