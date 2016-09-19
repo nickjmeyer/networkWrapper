@@ -138,18 +138,9 @@ int main( int argc, char * argv[] )
 	std::cout << "name is: " << name << std::endl;
 
 
-	global_stream_lock.lock();
-	std::cout << "hive" << std::endl;
-	global_stream_lock.unlock();
 	boost::shared_ptr< Hive > hive( new Hive() );
 
-	global_stream_lock.lock();
-	std::cout << "connection" << std::endl;
-	global_stream_lock.unlock();
 	boost::shared_ptr< ChatConnection > connection( new ChatConnection( hive ) );
-	global_stream_lock.lock();
-	std::cout << "connect" << std::endl;
-	global_stream_lock.unlock();
 	connection->Connect( srv, 7777 );
 
 	chat::Letter letter;
