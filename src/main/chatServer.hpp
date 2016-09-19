@@ -5,6 +5,11 @@
 #include "chat.pb.h"
 #include <queue>
 
+
+// random identifier
+std::string genIdentifier();
+
+
 class ChatServer;
 class ChatConnection;
 class ChatAcceptor;
@@ -22,6 +27,13 @@ public:
 private:
 	// host and port to connection
 	std::map<const std::string,const boost::shared_ptr<ChatConnection> > hpToConn;
+
+	// host and port to unique string identifier (keeps host and ports private)
+	std::map<const std::string, const std::string> hpToId;
+	// unique identifier to host and port
+	std::map<const std::string, const std::string> idToHp;
+	// host and port to nick-name
+	std::map<const std::string, std::string> hpToNn;
 };
 
 

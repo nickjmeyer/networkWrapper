@@ -1,7 +1,12 @@
 package chat;
 
+message Client {
+  optional string id = 1;
+  optional string nickname = 2;
+}
+
 message ScoutLetter {
-  repeated string client = 1;
+  repeated Client client = 1;
 }
 
 message TalkingLetter {

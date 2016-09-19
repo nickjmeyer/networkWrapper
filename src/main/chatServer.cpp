@@ -5,16 +5,35 @@
 #include <boost/thread/thread.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/random.hpp>
+#include <boost/generator_iterator.hpp>
 #include <queue>
 
 boost::mutex global_stream_lock;
+boost::mutex global_rng_lock;
+
+std::string genIdentifier() {
+	static const std::string alphanums =
+		"0123456789"
+		"abcdefghijklmnopqrstuvwxyz"
+		"ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+	static const unsigned int idLen = 32;
+	static boost::variate_generator<boost::mt19937,
+																	boost::uniform_int<> >
+		pick(boost::mt19937(),boost::uniform_int<>(0,alphanums.length()-1));
+	std::string id;
+	for (unsigned int i = 0; i < idLen; i++) {
+    id += alphanums[pick()];
+	}
+	return id;
+}
 
 void ChatServer::process(const chat::Letter & letter,
 	const boost::shared_ptr<ChatConnection> connection) {
 
-	global_stream_lock.lock();
-	std::cout << "[" << __PRETTY_FUNCTION__ << "]" << std::endl;
-	global_stream_lock.unlock();
+	// global_stream_lock.lock();
+	// std::cout << "[" << __PRETTY_FUNCTION__ << "]" << std::endl;
+	// global_stream_lock.unlock();
 
 	if(letter.has_type()) {
 		if(letter.type() == chat::Letter_Type_SCOUT) {
@@ -27,20 +46,36 @@ void ChatServer::process(const chat::Letter & letter,
 				it,end;
 			end = hpToConn.end();
 			for (it = hpToConn.begin(); it != end; ++it) {
-				scout->add_client(it->first);
+				chat::Client *client = scout->add_client();
+				client->set_id(hpToId.find(it->first)->second);
+				client->set_nickname(hpToNn.find(it->first)->second);
 			}
 			connection->SendLetter(response);
+		} else if (letter.type() == chat::Letter_Type_NAME) {
+			if(letter.nameletter().has_name()) {
+				const std::string hp =
+					connection->GetSocket().remote_endpoint().address().to_string()
+					+ ":" + boost::lexical_cast<std::string>(
+						connection->GetSocket().remote_endpoint().port());
+				hpToNn.find(hp)->second = letter.nameletter().name();
+			}
 		}
 	}
 }
 
 void ChatServer::addConnection(const std::string & hostPort,
 	const boost::shared_ptr<ChatConnection> connection) {
-	global_stream_lock.lock();
-	std::cout << "Adding connection: " << hostPort << std::endl;
-	global_stream_lock.unlock();
+
+	const std::string id = genIdentifier();
+
 	hpToConn.insert(std::pair<const std::string,
 		const boost::shared_ptr<ChatConnection> >(hostPort,connection));
+	hpToId.insert(std::pair<const std::string,const std::string>
+		(hostPort, id));
+	idToHp.insert(std::pair<const std::string,const std::string>
+		(id, hostPort));
+	hpToNn.insert(std::pair<const std::string,const std::string>
+		(hostPort, "Anonymous"));
 }
 
 void ChatServer::delConnection(
@@ -51,10 +86,10 @@ void ChatServer::delConnection(
 	end = hpToConn.end();
 	for (it = hpToConn.begin(); it != end; ++it) {
     if(it->second == connection) {
-			global_stream_lock.lock();
-			std::cout << "Deleting connection: " << it->first << std::endl;
-			global_stream_lock.unlock();
 			hpToConn.erase(it->first);
+			idToHp.erase(hpToId.find(it->first)->second);
+			hpToId.erase(it->first);
+			hpToNn.erase(it->first);
 			break;
 		}
 	}

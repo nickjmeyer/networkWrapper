@@ -121,15 +121,21 @@ boost::shared_ptr<Connection> ChatConnection::NewConnection () {
 
 int main( int argc, char * argv[] )
 {
-	std::string srv;
-	if(argc > 2)
+	std::string srv = "localhost";
+	std::string name = "Anonymous";
+	if(argc > 3)
 		std::cout << "too many arguments" << std::endl;
-	else if(argc == 2)
+	else if(argc == 3){
 		srv = argv[1];
-	else
-		srv = "localhost";
+		name = argv[2];
+	}
+	else if(argc == 2){
+		srv = argv[1];
+		name = "Anonymous";
+	}
 
 	std::cout << "connecting too: " << srv << std::endl;
+	std::cout << "name is: " << name << std::endl;
 
 
 	global_stream_lock.lock();
@@ -144,18 +150,28 @@ int main( int argc, char * argv[] )
 	global_stream_lock.lock();
 	std::cout << "connect" << std::endl;
 	global_stream_lock.unlock();
-	connection->Connect( "110lnx01.stat.ncsu.edu", 7777 );
+	connection->Connect( srv, 7777 );
 
 	chat::Letter letter;
-	chat::TalkingLetter * talking = letter.mutable_talkingletter();
-	talking->set_body("hello from client");
 	letter.set_type(chat::Letter_Type_SCOUT);
+	connection->SendLetter(letter);
+
+	hive->Poll();
+	boost::this_thread::sleep(boost::posix_time::milliseconds(5000));
+
+	chat::NameLetter * nameLetter = letter.mutable_nameletter();
+	nameLetter->set_name(name);
+	letter.set_type(chat::Letter_Type_NAME);
+	connection->SendLetter(letter);
+	hive->Poll();
+	boost::this_thread::sleep(boost::posix_time::milliseconds(5000));
 
 	uint8_t tick = 0;
 	while (true) {
 		std::vector<uint8_t> data;
 		data.push_back(tick++);
 
+		letter.set_type(chat::Letter_Type_SCOUT);
 		connection->SendLetter(letter);
 
 		hive->Poll();
