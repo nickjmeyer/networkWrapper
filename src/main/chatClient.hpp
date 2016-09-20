@@ -12,7 +12,22 @@ class ChatAcceptor;
 class ChatClient {
 public:
 
+	void printUsers() const;
+	void printMail() const;
+
+	bool pollInput();
+
+	void setUsers(std::vector<std::pair<std::string,std::string> > users);
+
+	bool getOutgoing(chat::Letter * letter);
+
+	void dropLetter(chat::Letter letter);
+
 private:
+	void pollMessage();
+
+	std::vector<std::pair<std::string, std::string> > users;
+
 	std::queue<chat::Letter> outgoing;
 	std::queue<chat::Letter> incoming;
 };
@@ -21,6 +36,8 @@ private:
 class ChatConnection : public Connection
 {
 private:
+	boost::shared_ptr<ChatClient> chatClnt;
+
 	void OnAccept( const std::string & host, uint16_t port );
 
 	void OnConnect( const std::string & host, uint16_t port );
@@ -34,7 +51,8 @@ private:
 	void OnError( const boost::system::error_code & error );
 
 public:
-	ChatConnection( boost::shared_ptr< Hive > hive );
+	ChatConnection( boost::shared_ptr<ChatClient> chatClnt,
+		boost::shared_ptr< Hive > hive );
 
 	~ChatConnection();
 

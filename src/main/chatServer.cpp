@@ -12,6 +12,13 @@
 boost::mutex global_stream_lock;
 boost::mutex global_rng_lock;
 
+void WorkerThread( boost::shared_ptr< Hive > hive)
+{
+	hive->Run();
+}
+
+
+
 std::string genIdentifier() {
 	static const std::string alphanums =
 		"0123456789"
@@ -21,10 +28,12 @@ std::string genIdentifier() {
 	static boost::variate_generator<boost::mt19937,
 																	boost::uniform_int<> >
 		pick(boost::mt19937(),boost::uniform_int<>(0,alphanums.length()-1));
+	global_rng_lock.lock();
 	std::string id;
 	for (unsigned int i = 0; i < idLen; i++) {
     id += alphanums[pick()];
 	}
+	global_rng_lock.unlock();
 	return id;
 }
 
@@ -59,6 +68,10 @@ void ChatServer::process(const chat::Letter & letter,
 						connection->GetSocket().remote_endpoint().port());
 				hpToNn.find(hp)->second = letter.nameletter().name();
 			}
+		} else if(letter.type() == chat::Letter_Type_TALKING) {
+			const std::string recipient = letter.talkingletter().recipient();
+			const std::string hp = idToHp.find(recipient)->second;
+			hpToConn.find(hp)->second->SendLetter(letter);
 		}
 	}
 }
@@ -259,9 +272,14 @@ int main( int argc, char * argv[] )
 		new ChatConnection(chatSrv,hive));
 	acceptor->Accept( connection );
 
-	while(true) {
-		hive->Poll();
-		boost::this_thread::sleep(boost::posix_time::milliseconds(100));
+	boost::thread_group worker_threads;
+	worker_threads.create_thread(
+		boost::bind(&WorkerThread, hive));
+
+	std::string input;
+	while(input.compare("quit")) {
+		boost::this_thread::sleep(boost::posix_time::milliseconds(1000));
+		std::cin >> input;
 	}
 
 	hive->Stop();
